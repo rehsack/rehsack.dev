@@ -1,0 +1,124 @@
+---
+title: "Imprint & Privacy"
+permalink: /imprint/
+---
+
+== Imprint / Impressum
+
+_Information pursuant to § 5 DDG (formerly TMG) /
+Angaben gemäß § 5 DDG (ehemals TMG):_
+
+Jens Rehsack +
+Antwerpener Str. 99 +
+50171 Kerpen +
+Germany
+
+=== Contact / Kontakt
+
+E-Mail: pass:macros[<span class="email-protect" data-user="rehsack+dev" data-domain="gmail.com">[JavaScript required\]</span>]
+
+=== Responsible for content pursuant to § 18(2) MStV / Verantwortlich für den Inhalt gemäß § 18 Abs. 2 MStV
+
+Jens Rehsack (address as above / Anschrift wie oben)
+
+=== Disclaimer
+
+This website promotes freelance consulting and engineering services.
+No goods or services are sold directly through this website. /
+Diese Website bewirbt freiberufliche Beratungs- und Engineering-Dienstleistungen.
+Es werden keine Waren oder Dienstleistungen direkt über diese Website verkauft.
+
+== Privacy Policy / Datenschutzerklärung
+
+=== Scope / Geltungsbereich
+
+Processing of personal data complies with the General Data Protection
+Regulation (GDPR) and German federal data protection law (BDSG). /
+Die Verarbeitung personenbezogener Daten erfolgt im Einklang mit der
+Datenschutz-Grundverordnung (DSGVO / GDPR) und dem BDSG.
+
+=== Data collected / Erhobene Daten
+
+==== Hosting
+
+This website is hosted on *GitHub Pages*, a service of GitHub, Inc.,
+a subsidiary of Microsoft Corporation
+(https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement).
+Servers may be located outside the EU. /
+Diese Website wird auf *GitHub Pages* gehostet, einem Dienst von GitHub, Inc.,
+einer Tochtergesellschaft der Microsoft Corporation
+(https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement).
+Die Server können sich außerhalb der EU befinden.
+
+==== Server logs / Server-Logs
+
+When you visit this website, the hosting provider (GitHub Pages) automatically
+collects the following data: /
+Beim Aufruf dieser Website werden durch den Hosting-Anbieter (GitHub Pages)
+automatisch folgende Daten erfasst:
+
+* Browser type and version / Browsertyp und -version
+* Operating system / Betriebssystem
+* Referrer URL
+* IP address (anonymized) / IP-Adresse (anonymisiert)
+* Time of access / Zeitpunkt des Zugriffs
+
+Legal basis: Art. 6(1)(f) GDPR (legitimate interest in secure website operation). /
+Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse am
+sicheren Betrieb der Website).
+
+==== Cookies
+
+This website does not use cookies.
+The color scheme preference (light/dark) is stored exclusively in your browser
+(`localStorage`) and is not transmitted to any server. /
+Diese Website verwendet keine Cookies.
+Die Wahl des Farbschemas (hell/dunkel) wird ausschließlich in Ihrem Browser
+gespeichert (`localStorage`) und nicht an einen Server übermittelt.
+
+==== External resources / Externe Ressourcen
+
+This website loads its theme (Minimal Mistakes) at build time from GitHub. /
+Diese Website lädt das Theme (Minimal Mistakes) zur Buildzeit von GitHub.
+
+The following external resource is loaded at runtime: /
+Folgende externe Ressource wird zur Laufzeit eingebunden:
+
+* *Font Awesome* (icon font) via jsDelivr CDN (`cdn.jsdelivr.net`). +
+  jsDelivr is operated by Prospect One (https://www.jsdelivr.com/terms/privacy-policy-jsdelivr-net).
+  Your browser connects to jsDelivr to load CSS and font files;
+  this transmits your IP address and standard HTTP headers to their servers.
+  No cookies are set. No tracking takes place through this embedding. /
+  jsDelivr wird betrieben von Prospect One (https://www.jsdelivr.com/terms/privacy-policy-jsdelivr-net).
+  Ihr Browser stellt eine Verbindung zu jsDelivr her, um CSS- und Schriftdateien zu laden;
+  dabei werden Ihre IP-Adresse und Standard-HTTP-Header an deren Server übermittelt.
+  Es werden keine Cookies gesetzt. Durch diese Einbindung findet kein Tracking statt.
+
+No analytics, advertising, or social-media tracking is used on this website. /
+Es werden keine Analyse-, Werbe- oder Social-Media-Tracking-Dienste eingesetzt.
+
+=== Contact requests / Kontaktaufnahme
+
+If you contact us by email, your data will be stored to process the request
+and deleted after resolution, unless legal retention obligations apply. /
+Wenn Sie per E-Mail Kontakt aufnehmen, werden Ihre Angaben zur Bearbeitung
+der Anfrage gespeichert und nach Erledigung gelöscht, sofern keine
+gesetzlichen Aufbewahrungspflichten bestehen.
+
+Legal basis: Art. 6(1)(b) GDPR. /
+Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.
+
+=== Your rights / Ihre Rechte
+
+Under GDPR you have the right to / Sie haben gemäß DSGVO das Recht auf:
+
+* Access to your stored data (Art. 15) / Auskunft über Ihre gespeicherten Daten (Art. 15)
+* Rectification of inaccurate data (Art. 16) / Berichtigung unrichtiger Daten (Art. 16)
+* Erasure of your data (Art. 17) / Löschung Ihrer Daten (Art. 17)
+* Data portability (Art. 20) / Datenübertragbarkeit (Art. 20)
+* Complaint to a supervisory authority (Art. 77) / Beschwerde bei einer Aufsichtsbehörde (Art. 77)
+
+Competent supervisory authority: State Commissioner for Data Protection
+and Freedom of Information North Rhine-Westphalia (LDI NRW). /
+Zuständige Aufsichtsbehörde: Landesbeauftragte für Datenschutz und
+Informationsfreiheit Nordrhein-Westfalen (LDI NRW).

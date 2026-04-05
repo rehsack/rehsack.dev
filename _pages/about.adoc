@@ -1,0 +1,65 @@
+---
+title: "About"
+permalink: /about/
+license: "CC BY-NC-ND 4.0"
+---
+
+= Jens Rehsack — Platform Architect & Technical Product Owner
+
+[quote, Friedrich Schiller]
+Simplicity is the result of maturity.
+
+== Who I Am
+
+I am a senior platform architect with over 30 years of experience in software
+engineering, specializing in embedded and IoT systems.  My work focuses on
+bridging the gap between business goals and technical implementation --
+translating stakeholder requirements into robust, maintainable architectures
+that deliver lasting value.
+
+I believe in iterative, purpose-driven development: small, deliberate steps
+that produce usable intermediate results rather than rushing toward a distant
+endpoint.  With each iteration, the understanding of actual needs and
+constraints deepens.  Simplicity, in this view, is not a shortcut -- it is the
+outcome of continuous reflection, honest communication, and the ability to
+distinguish the essential from the incidental.
+
+== Core Expertise
+
+Business-Technical Translation::
+Translating business objectives into sound technical architectures.
+Stakeholder management across organizational boundaries and disciplines.
+
+Embedded / IoT Platform Architecture::
+Yocto/OpenEmbedded contributor (Core 2015--2020, custom layers since then).
+Design and implementation of Linux-based embedded platforms -- from BSP and
+update systems to CI/CD integration.
+
+Framework Design (tpo42)::
+Creator of the open-source https://www.tpo42.de[tpo42 framework] for Technical
+Product Owners, connecting req42 (requirements engineering) with arc42
+(architecture documentation).  Documentation as Code with docToolchain.
+
+Agile Architecture::
+arc42, C4 model, ADR, aim42.  Facilitation, Liberating Structures,
+Sociocracy 3.0.
+
+== Open Source Engagement
+
+* *NetBSD Committer* since 2008 -- cross-platform package maintenance (pkgsrc),
+  security patch management, porting across AIX, Solaris, HP-UX, Linux, macOS,
+  Windows, and the BSDs.
+* *CPAN Author* (2007--2022) -- Perl modules including SQL::Statement,
+  Hash::MoreUtils, DBI::Test.  API documentation, test automation, CI.
+* *Yocto / OpenEmbedded Contributor* (2015--present) -- packages for OE-Core,
+  custom layers for Perl modules (meta-cpan), system init (meta-sysinit),
+  provisioning and OTA updates (meta-prd-flash).
+* *tpo42 Framework Initiative* (2025--present) -- open-source framework for
+  strategic business-technical integration, community building, conference talks.
+
+== Industries & Domains
+
+Throughout my career I have worked across a range of industries including
+telecommunications, automotive, industrial IoT, energy, retail, logistics,
+and public sector -- always with a focus on platform architecture and
+long-term technical sustainability.

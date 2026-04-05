@@ -1,0 +1,14 @@
+---
+title: "tpo42 Framework"
+excerpt: "Open-source methodology framework for Technical Product Owners — connecting req42 and arc42."
+---
+
+== tpo42 Framework
+
+An open-source framework for Technical Product Owners that integrates
+requirements engineering (req42) with architecture documentation (arc42)
+into a unified "Documentation as Code" workflow.
+
+Website:: https://www.tpo42.de
+Focus:: Business-technical integration, stakeholder management, iterative architecture
+Stack:: Jekyll, AsciiDoc, docToolchain, PlantUML

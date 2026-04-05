@@ -1,0 +1,130 @@
+---
+title: "Jekyll + AsciiDoc in a devcontainer — zero local setup"
+date: 2026-04-05
+tags: [devcontainer, jekyll, asciidoc, docker, tpo42]
+translation_url: "https://rehsack.de/2026/04/05/devcontainer-asciidoc-jekyll/"
+share_on: [linkedin, mastodon, hackernews, reddit]
+---
+
+Setting up a Jekyll site with AsciiDoc support usually means installing Ruby,
+Bundler, and a handful of gems on your machine.  With the
+https://github.com/tpo42/tpo42-asciidoc-container[tpo42/adoc] container and the
+https://containers.dev/[Dev Containers] specification, you can skip all of
+that.
+
+== The idea
+
+The `ghcr.io/tpo42/adoc` container already ships Ruby 3.x, Bundler 4.x, and the full
+Asciidoctor toolchain (asciidoctor, asciidoctor-pdf, asciidoctor-diagram, …).
+Jekyll and its plugins are just a `bundle install` away -- no need to pollute
+your host system.
+
+== Setup
+
+=== 1. Gemfile
+
+A standard Jekyll Gemfile -- the container provides Ruby and Bundler, so
+nothing else is needed on the host:
+
+[source,ruby]
+----
+source "https://rubygems.org"
+
+gem "jekyll", "~> 4.4"
+gem "jekyll-remote-theme"
+gem "jekyll-asciidoc"
+gem "asciidoctor"
+gem "jekyll-sitemap"
+gem "jekyll-feed"
+gem "jekyll-include-cache"
+gem "webrick"
+----
+
+=== 2. `.devcontainer/devcontainer.json`
+
+[source,json]
+----
+{
+  "name": "my-site",
+  "image": "ghcr.io/tpo42/adoc:latest",
+  "workspaceFolder": "/workspace",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
+  "postCreateCommand": "bundle config set --local path vendor/bundle && bundle install",
+  "appPort": [4000, 35729],
+  "forwardPorts": [4000, 35729],
+  "portsAttributes": {
+    "4000": { "label": "Jekyll", "onAutoForward": "notify" },
+    "35729": { "label": "LiveReload", "onAutoForward": "silent" }
+  }
+}
+----
+
+Key points:
+
+`image`:: Uses `ghcr.io/tpo42/adoc:latest` directly (the "simple case" from
+ADR-005).  No custom Dockerfile needed.
+
+`postCreateCommand`:: Installs gems into `vendor/bundle` (writable by
+the container user, ignored by `.gitignore`).
+
+`appPort`:: Maps ports at the Docker level, so `jekyll serve` is
+reachable from the host even without VS Code.
+
+`forwardPorts`:: Does the same for VS Code's built-in port forwarding.
+
+=== 3. Start the container
+
+With the https://github.com/devcontainers/cli[devcontainer CLI]:
+
+[source,bash]
+----
+devcontainer up --workspace-folder .
+----
+
+Then serve the site:
+
+[source,bash]
+----
+devcontainer exec --workspace-folder . \
+  bundle exec jekyll serve --host 0.0.0.0 --livereload
+----
+
+Open http://localhost:4000 -- done.
+
+== Why not a dedicated Jekyll image?
+
+Images like `bretfisher/jekyll-serve` work, but they ship their own Ruby and
+gem set.  If your content is AsciiDoc, you end up needing the Asciidoctor
+toolchain _and_ Jekyll -- two separate containers, or one bloated custom image.
+
+With `ghcr.io/tpo42/adoc` as the base, you get Asciidoctor for document processing
+(flatten, validate, extract diagrams via `adcw`) _and_ Jekyll for serving --
+from a single image, driven by your project's Gemfile.
+
+== AsciiDoc validation -- still works from the host
+
+The `adcw` wrapper does not require a devcontainer.  You can validate your
+`.adoc` files any time:
+
+[source,bash]
+----
+adcw validate -i _pages/about.adoc
+----
+
+This runs a quick `docker run --rm` -- no long-lived container needed.
+
+== Lessons learned
+
+`appPort` vs `forwardPorts`::
+The devcontainer CLI does not forward ports on its own.  `forwardPorts` is a
+VS Code feature.  For CLI-only workflows, `appPort` is required.
+
+Gem permissions::
+The `ghcr.io/tpo42/adoc` container runs as an unprivileged user.  `bundle install`
+without `--path` tries to write to system gem directories and fails.
+`bundle config set --local path vendor/bundle` solves this cleanly.
+
+Container reuse::
+`devcontainer up` reuses existing containers.  After changing
+`devcontainer.json`, remove the old container first (`docker rm -f <id>`)
+before running `devcontainer up` again.
