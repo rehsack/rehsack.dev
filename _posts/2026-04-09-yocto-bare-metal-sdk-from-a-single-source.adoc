@@ -1,0 +1,231 @@
+---
+title: "Yocto for bare-metal: cross-compiler and CI toolchain from a single source"
+date: 2026-04-09
+tags: [yocto, embedded, bare-metal, ci, toolchain, cross-compilation]
+translation_url: "https://rehsack.de/2026/04/09/yocto-bare-metal-sdk-aus-einem-guss/"
+share_on: [linkedin, mastodon, hackernews, reddit]
+---
+
+Building firmware for microcontrollers requires a cross-compiler.
+You can get one from https://crosstool-ng.github.io/[crosstool-ng],
+as an ARM binary download, or from your distribution's package
+manager.  That works -- and once you want unit tests in CI as well,
+things get really interesting.
+
+Because then you need _two_ toolchains: one for the target
+(`arm-none-eabi-gcc` with newlib) and one for the host (`x86_64`
+or `aarch64`) to compile the same code against a test framework.
+The host naturally runs a different libc -- but the GCC generation,
+Google Test version, gcov, and the analysis tools must match exactly.
+
+Bare-metal sounds like minimal effort: when newlib is already
+the gold standard, the horizon feels within arm's reach.  The
+challenge is not the number of dependencies, but the fact that all
+the surrounding tools must be in lockstep for both target and host.
+And that can be solved elegantly.
+
+== The problem: two toolchains, one truth
+
+Say the cross-compiler is GCC 15 with newlib.  Unit tests run on the
+CI host, so we need GCC 15 there as well -- not the GCC 14 that
+Fedora 43 ships, and certainly not the GCC 13 from the Ubuntu LTS
+on the CI runners.
+
+On top of that come ABI-coupled tools:
+
+* **Google Test / GMock** -- compiled against the respective toolchain
+* **gcov / lcov** -- must match the GCC version, otherwise coverage data is off
+* **valgrind** -- must understand the ABI of the tested binaries
+
+Maintaining all of this manually means target and host toolchain
+quickly end up in separate supply chains.  It doesn't have to be
+that way.
+
+== Why I approach this differently today
+
+Some years ago at a telecom equipment vendor: a SoM with network
+accelerators, plus a binary SDK from the chip manufacturer.  32-bit,
+an ancient GCC version, linked against a Linux distribution only
+available on the black market in exchange for a handsome number of
+camels.  Long before LLVM/Clang became a serious GCC contender and
+shook up the stagnation.
+
+IT ran a multi-processor node with about 64 VMs --
+2{nbsp}VCPUs, 2{nbsp}GB RAM each, massively overcommitted, barely
+maintainable.  The SDK could not be reproduced, updated, or ported
+to another host platform.  And the chip was even Linux-capable --
+much more would have been possible.
+
+I have seen this pattern repeatedly since then: chip manufacturers
+want to sell chips, not development environments.  The SDK is a
+side dish -- it eases the initial setup but is not meant to carry
+you long-term.  A vendor BSP on an LTS base, good enough for
+years -- until the LTS cycle expires.  Then suddenly: we need to
+update, ship in six weeks, and it must not cost anything.
+
+That motivated me to take a different path.
+
+== The Yocto solution: MACHINE abstraction as SSOT
+
+The https://www.yoctoproject.org/[Yocto Project] is primarily known
+as a build system for embedded Linux distributions.  But its recipe
+system goes further: it builds _arbitrary_ toolchains from source --
+for different target architectures, from the same set of recipes.
+
+The key is the `MACHINE` variable.  The same recipes for GCC, newlib,
+Google Test, and gcov produce different results depending on the
+target:
+
+[cols="1,2,2"]
+|===
+| MACHINE | Result | Example
+
+| `aducm360`
+| `arm-none-eabi-gcc` (Cortex-M3, soft-float)
+| measurement MCU, ADC front-end
+
+| `stm32h7a3`
+| `arm-none-eabi-gcc` (Cortex-M7, hard-float, FPv5-D16)
+| communication MCU, DCP stack
+
+| `samd21`
+| `arm-none-eabi-gcc` (Cortex-M0+, soft-float)
+| camera control
+
+| `esp32c6`
+| `riscv32-none-elf-gcc` (RV32IMAC)
+| RISC-V IoT, Wi-Fi/BLE
+
+| `gd32vf103`
+| `riscv32-none-elf-gcc` (RV32IMAC)
+| RISC-V with DSP extensions, atomthreads
+
+| `x86-64` / `aarch64`
+| host-native GCC of the same generation
+| CI: unit tests, valgrind, coverage
+|===
+
+The list could go on.  The point is: whether ARM Cortex-M, RISC-V,
+or host-native -- the recipes are the same.  Only `MACHINE` and the
+associated tune configuration differ.
+
+*One* source, *one* GCC version, *one* ABI coupling -- DRY and SSOT
+instead of n{nbsp}separately maintained toolchains.
+
+Yocto does not just build the compiler: a **QEMU** for the respective
+target can be produced from the same recipes.  This lets you emulate
+firmware binaries on the CI host -- without real hardware, but with
+the correct CPU emulation.  For integration tests on a Cortex-M or
+RISC-V, that is pure gold.
+
+== What belongs in the SDK -- and what doesn't?
+
+The first instinct is: only the compiler and its immediate
+dependencies.  In practice, the boundary extends further.
+
+**From Yocto -- frozen and versioned:**
+
+* GCC + binutils + newlib (the compiler core)
+* Google Test / GMock (test framework, compiled against the toolchain)
+* gcov / lcov (coverage -- must match the GCC version)
+* valgrind (memory analysis -- must understand the ABI)
+* **clang-tidy** (static analysis -- needs the _correct_ target
+  headers and libraries, not those of the host system)
+* **clang-format** (a frozen version prevents whitespace wars
+  between developers)
+* **CMake, Ninja** (if the host distribution's CMake suddenly gets a
+  major update, it might break the build)
+* QEMU (target emulation for integration tests)
+
+The common denominator: everything that affects the build result or
+the analysis of the build result must be freezable and reproducible.
+clang-tidy sounds orthogonal at first -- until you realise it needs
+to parse the target headers, not those of the host system.
+
+**From the distribution -- independently updatable:**
+
+* Doxygen (API documentation)
+* srecord (ELF -> HEX conversion)
+* doctoolchain, asciidoctor (project documentation)
+
+These tools affect neither the binary nor the analysis and can be
+updated independently -- without firmware requalification.
+
+== Bare-metal hardening: what works without an OS?
+
+A side benefit of the Yocto-based toolchain: full control over
+compiler flags, in clean layers.
+
+On bare-metal the usual OS protection mechanisms are absent
+(`__stack_chk_fail` without libc, no ASLR without a loader, no PIE
+without an MMU).  But GCC 13+ offers hardening flags that work
+_without_ an OS:
+
+[source,bash]
+----
+-fharden-compares
+-fharden-conditional-branches
+-fharden-control-flow-redundancy
+-ftrivial-auto-var-init=zero
+----
+
+These flags do not go into the toolchain itself (otherwise newlib
+would not build), but into an SDK environment hook -- a thin shell
+file that sets `CFLAGS`/`CXXFLAGS` when the toolchain is activated.
+Three layers:
+
+1. **Distro config** (Yocto): flags that newlib also needs (`-ffunction-sections`, `-fdata-sections`)
+2. **SDK hook**: hardening and warnings for firmware development
+3. **Firmware project** (CMakeLists.txt): project-specific settings (`-std=gnu23`, target defines)
+
+== Long-term impact: 10 years of firmware support
+
+In regulated industries you deliver firmware fixes for products
+shipped 10 or 15 years ago.  With a Yocto-based toolchain that is
+a `git checkout` to the release tag and a `bitbake meta-toolchain`
+-- done.
+
+Yocto provides two mechanisms often dismissed as implementation
+details, but essential for release management:
+
+`DL_DIR`:: The directory where Yocto stores all downloaded sources
+-- tarballs, git snapshots, patches.  This is not a by-product, it
+is a **source archive**.  Archive `DL_DIR` and you can still build
+the toolchain when the upstream servers have long gone offline.
+
+`SSTATE_DIR`:: The shared-state cache.  Yocto stores the
+intermediate results of every build step here.  For a release fix
+years later, not everything needs to be rebuilt from scratch -- the
+cache speeds up the rebuild to only the actually changed components.
+
+Together, both directories form the backbone of long-term
+serviceability: sources secured, build results traceable, rebuild
+times manageable.
+
+== CRA and SBOM: from nice-to-have to mandatory
+
+With the https://digital-strategy.ec.europa.eu/en/policies/cyber-resilience-act[Cyber Resilience Act]
+the question "what is inside my toolchain?" becomes regulatory.
+An SBOM (Software Bill of Materials) with full provenance is no
+longer optional -- it is becoming mandatory for products with digital
+elements.
+
+Yocto generates SPDX SBOMs as a by-product of the build -- for every
+component built from source.  `DL_DIR` provides the source archival,
+the recipes provide the dependency chain, and
+`INHERIT += "create-spdx"` ties both into a machine-readable SBOM.
+
+Built with Yocto means: provenance by construction, not by trust.
+That carries real weight when the auditor comes knocking.
+
+== Conclusion
+
+Cross-compilers for bare-metal are a dime a dozen.  The real value
+of Yocto is not the cross-compiler itself, but the fact that the
+target toolchain, the host CI toolchain, and all surrounding tools
+come _from the same source_ -- reproducible, freezable, CRA-ready.
+
+The barrier to entry is real: Yocto has a steep learning curve.  But
+those who take the leap get a toolchain infrastructure that scales
+with every new target and every new project -- instead of starting
+from scratch each time.
