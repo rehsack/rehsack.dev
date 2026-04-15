@@ -1,0 +1,213 @@
+---
+title: "Validate-First: AsciiDoc projects with devcontainer and docker-compose"
+date: 2026-04-12
+tags: [devcontainer, docker-compose, asciidoc, doctoolchain, ci, tpo42]
+translation_url: "https://rehsack.de/2026/04/12/validate-first-docker-compose-devcontainer/"
+share_on: [linkedin, mastodon, hackernews, reddit]
+---
+
+The link:/2026/04/05/devcontainer-asciidoc-jekyll/[previous post] covered a
+single container for Jekyll + AsciiDoc.  This time things get more
+interesting: two containers working together -- one validates, the other
+builds.
+
+== The problem: docToolchain swallows errors
+
+https://doctoolchain.org/[docToolchain] is the reference tool for
+arc42/req42 documentation.  It produces HTML and PDF from AsciiDoc
+sources -- reliably, battle-tested, well integrated.
+
+What it does not do: abort on broken AsciiDoc.  Missing includes,
+unresolved cross-references, syntax errors -- docToolchain reports them
+as warnings and keeps building.  You end up with a PDF full of
+placeholders where content should be.
+
+In a CI pipeline that is fatal.  The build is "green", the artefact is
+broken.
+
+== The solution: validation as a gate
+
+The `ghcr.io/tpo42/adoc` container (the one from the
+link:/2026/04/05/devcontainer-asciidoc-jekyll/[Jekyll post]) ships not
+only the AsciiDoc toolchain but also a `validate` command.  Under the
+hood it runs `asciidoctor` in strict mode: missing files, broken
+references, syntax errors -- everything becomes an error, not a warning.
+
+The idea: validate _before_ the build.  Only when the sources are clean
+may docToolchain proceed.
+
+== Two containers, one workflow
+
+Instead of cramming everything into a single container we separate
+concerns:
+
+[cols="1,2,2"]
+|===
+| Container | Job | Image
+
+| **adoc**
+| AsciiDoc validation, development toolchain
+| `ghcr.io/tpo42/adoc:latest`
+
+| **doctoolchain**
+| PDF and HTML builds
+| `doctoolchain/doctoolchain:v3.4.2`
+|===
+
+The glue is a `docker-compose.yml`:
+
+[source,yaml]
+----
+services:
+  adoc:
+    image: ghcr.io/tpo42/adoc:latest
+    volumes:
+      - .:/workspace
+    command: ["sleep", "infinity"]
+
+  doctoolchain:
+    image: doctoolchain/doctoolchain:v3.4.2
+    platform: linux/amd64
+    volumes:
+      - .:/project
+      - dtc-gradle-cache:/home/dtcuser/.gradle
+    entrypoint: ["sleep", "infinity"]
+    environment:
+      DTC_HEADLESS: "true"
+      DTC_OPTS: >-
+        -PmainConfigFile=docToolchainConfig.groovy
+        --warning-mode=none -Dfile.encoding=UTF-8
+
+volumes:
+  dtc-gradle-cache:
+----
+
+Both containers run permanently (`sleep infinity`).  Commands go in via
+`docker compose exec` -- no container-start overhead per invocation.
+
+== The devcontainer
+
+The `.devcontainer/devcontainer.json` references the same Compose file:
+
+[source,json]
+----
+{
+  "name": "my-docs-project",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "adoc",
+  "workspaceFolder": "/workspace",
+  "shutdownAction": "stopCompose"
+}
+----
+
+`devcontainer up` starts _both_ containers.  The adoc container is the
+primary -- that is where you edit and validate.  The doctoolchain
+container runs as a sidecar for builds.
+
+== The workflow
+
+[source,bash]
+----
+# Start the containers
+docker compose up -d
+
+# Validate
+docker compose exec adoc validate \
+    -i Docs/req42-container-toolchain.adoc \
+    -i Docs/arc42-container-toolchain.adoc \
+    --strict --verbose
+
+# Build
+docker compose exec doctoolchain \
+    bash -c 'doctoolchain . generatePDF $DTC_OPTS'
+docker compose exec doctoolchain \
+    bash -c 'doctoolchain . generateHTML $DTC_OPTS'
+----
+
+Or with the devcontainer CLI -- at least for the adoc container:
+
+[source,bash]
+----
+devcontainer exec --workspace-folder . validate -i Docs/*.adoc --strict
+----
+
+For the doctoolchain container this does not (yet) work:
+`devcontainer exec` only knows the primary service -- there is no
+`--service` flag.  For builds you still need `docker compose exec`.
+
+== The side-effect: 40 seconds -> 2 seconds
+
+docToolchain is built on Gradle.  Every `docker run` starts a fresh JVM,
+initialises the Gradle daemon, loads plugins -- roughly 40 seconds
+before anything is actually built.
+
+The `dtcw` wrapper deliberately uses `--no-daemon` because the daemon
+dies anyway in one-shot containers.  But when the container _stays alive_
+(`sleep infinity` + `docker compose exec`), the daemon stays warm:
+
+[cols="2,1,1"]
+|===
+| | First call | Subsequent calls
+
+| `docker run --no-daemon` (classic)
+| ~40s
+| ~40s
+
+| `docker compose exec` (persistent)
+| ~15s
+| **~2s**
+|===
+
+The Gradle cache lives in a named volume (`dtc-gradle-cache`) and
+survives `docker compose down` / `up` cycles.  Only
+`docker compose down -v` wipes it.
+
+This is not a trick -- it is simply how Gradle was designed to work.
+`docker run` forces the cold start that Gradle is meant to avoid.
+
+== CI: same images, different flow
+
+In a CI pipeline (Jenkins, GitLab CI, ...) the containers run as
+one-shot invocations.  The warm daemon does not help there -- but
+validation as a gate is what matters:
+
+[source]
+----
+Stage: Validate    ->  Stage: Build PDF  ->  Stage: Build HTML  ->  Archive
+(ghcr.io/tpo42/adoc) (doctoolchain)       (doctoolchain)
+----
+
+If Validate fails the build stages do not run.  No broken PDF in the
+artefacts.
+
+== What I learned along the way
+
+`sleep infinity` is not a crutch::
+For task-runner containers (validate, build) a permanently running
+container sounds wasteful.  But when the container is stateful (Gradle
+daemon, gem cache), the persistent setup is the performant option.
+
+`DTC_OPTS` as an environment variable::
+docToolchain expects various flags (`-PmainConfigFile=...`,
+`--warning-mode=none`, ...).  Defining them as `DTC_OPTS` in the
+`docker-compose.yml` saves you from repeating them on every call:
+`bash -c 'doctoolchain . generatePDF $DTC_OPTS'`.
+
+`devcontainer exec` has limits::
+The devcontainer CLI can only exec into the primary service.  For
+sidecar containers you need `docker compose exec`.  A `--service` flag
+would make a sensible feature request for the
+https://github.com/devcontainers/cli[devcontainers/cli].
+
+== Outlook
+
+This setup covers _only_ requirements and architecture documentation --
+there is no source code to compile.  A firmware project would add at
+least a third container: the cross-compiler.  And for projects with
+vendor-specific code generation (STM32CubeMX) a fourth, passing
+artefacts to the compile container via a shared volume.
+
+The `docker-compose.yml` scales linearly for this -- one service per
+concern, the same Compose file for devcontainer and CI.
+
+But more on that when we get there.
