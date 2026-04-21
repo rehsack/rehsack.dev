@@ -1,0 +1,110 @@
+---
+title: "Responsible Engineering Credo: My Response to the AI Debate"
+date: 2026-04-21
+tags: [ai, software-engineering, responsibility, credo]
+translation_url: "https://rehsack.de/2026/04/21/responsible-engineering-credo/"
+share_on: [linkedin, mastodon]
+license: "CC BY-NC-ND 4.0"
+---
+
+A question has been nagging at me for weeks: How do we actually talk about
+responsibility in AI-assisted software development?
+
+== Manifestos and Their Limits
+
+Many manifestos on AI-assisted development are emerging right now. The
+https://aicraftspeopleguild.github.io/aicraftspeopleguild-manifesto.html[AI Craftspeople Guild Manifesto]
+is one of them. Well-intentioned, important topics. But reading it, I realized:
+my situation doesn't appear in it. My professional environment, my tools,
+my context — the manifesto speaks *for* all software professionals, but not
+*with* me.
+
+That's the fundamental problem with many manifestos: they set standards without
+knowing the diversity of contexts. Semantic anchors, skills, guardrails —
+those who work with these tools daily often don't recognize themselves in
+blanket demands.
+
+The https://agilemanifesto.org/[Agile Manifesto] did it differently.
+"Individuals and interactions over processes and tools" isn't a declaration
+by a group speaking for the industry. It's an invitation. An attitude that
+*I* can adopt — or not. *I* prioritize people over processes. *I* choose this.
+Nobody speaks for me.
+
+Uncle Bob is often misunderstood as a moralizer. But if you read carefully,
+he doesn't say: "You all must write Clean Code." He says: "Here are principles
+that — if you follow them — help you and your team grow." Self-efficacy,
+not external control.
+
+== Left over Right — for Myself
+
+So I wrote down what *I* commit to. Not a manifesto that prescribes to others.
+A credo — a personal commitment.
+
+The foundation is simple:
+
+[quote]
+____
+We take full responsibility for every line of code we commit —
+regardless of its origin.
+____
+
+The values follow the "X over Y" pattern:
+
+* Accountable authorship over anonymous generation
+* Enforced over promised quality
+* Predictable over assumed behavior
+* Guaranteed over promised data integrity
+* Personal liability over diffuse responsibility
+* Informed consent over tacit assumption
+
+The full credo with explanations is on GitHub:
+https://github.com/rehsack/Responsible-Engineering-Credo
+
+== Why Now?
+
+AI can generate code. But *responsibility* cannot be generated — it must be
+taken. Every line of code that goes to production needs someone who says:
+"I stand behind this."
+
+This isn't a new idea. Signed commits have existed for years. Code reviews too.
+But in a world where a weekend project suddenly calls itself a SaaS startup
+and processes customer data, the question becomes more pressing: Who bears
+responsibility when things go wrong?
+
+== Tools Instead of Mandates
+
+A credo is nice. But how do you implement it? Not through rules from above —
+but through tools that empower each team to make their own decisions.
+
+The https://llm-coding.github.io/vibe-coding-risk-radar/[Vibe Coding Risk Radar]
+is such a tool. Five dimensions, four risk tiers, concrete mitigations.
+Not "you must consider these risks" — but an interactive tool with which
+*you* build your own decision matrix. For your project, with your context,
+based on your assessment.
+
+That's the difference between a manifesto that speaks for everyone and a
+toolbox that empowers each individual.
+
+== The Unanswered Question
+
+What most manifestos don't address: Where does my responsibility end in a
+world full of dependencies?
+
+I use a government API — it was developed with AI. I use npm packages —
+someone contributed with Copilot. My client pays for me not to use AI —
+do I then have to refuse the government's API?
+
+The credo draws the line clearly: *I take responsibility for the code I
+commit.* Not for the entire supply chain. Not for government APIs.
+For my contribution.
+
+== Invitation
+
+The credo is a discussion draft. I make no claim to completeness or wisdom.
+If it resonates with you — take it, fork it, adapt it. If you disagree —
+let's talk.
+
+GitHub: https://github.com/rehsack/Responsible-Engineering-Credo
+
+The future of software development won't be decided by tools, but by the
+people who use them. And by the attitude with which they do so.
