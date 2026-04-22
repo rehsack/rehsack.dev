@@ -1,0 +1,184 @@
+---
+title: "PARIS over RACI: Responsibilities for req42 and arc42"
+date: 2026-04-22
+tags: [architecture, req42, arc42, tpo42, stakeholder, responsibility]
+translation_url: "https://rehsack.de/2026/04/22/paris-statt-raci/"
+share_on: [linkedin, mastodon]
+license: "CC BY-NC-SA 4.0"
+---
+
+"For the last 30 years, Erwin has always done that."
+
+This is how many conversations begin when a mid-sized company realizes
+that responsibilities are unclear. Erwin knew where his tools were.
+Erwin's boss said: "Take care of it" — and it got done. Handed-down
+knowledge, implicit rules, organically grown structures.
+
+Then Erwin retires. And suddenly it becomes clear: The responsibilities
+were never documented. They were in Erwin's head.
+
+== The First Answer: RACI
+
+Someone says: "We need a RACI matrix." That sounds professional. RACI
+(Responsible, Accountable, Consulted, Informed) is an established tool.
+It's meant to clarify who's in charge of what, who approves, who gets
+consulted.
+
+The problem isn't that RACI is wrong. The problem is that RACI is too
+coarse in certain contexts.
+
+== Where RACI Reaches Its Limits
+
+RACI works well when tasks are clearly separable, when roles are
+homogeneous, and when the distinction between execution, consultation,
+and approval doesn't need to be particularly fine. In operational areas
+— production, logistics, support — this is often the case.
+
+In research and development, things look different. Not because R&D has
+no processes — reviews, approvals, tests, architecture decisions, budget
+management are certainly recurring sub-processes. But the overall process
+is not fully stable or predictable.
+
+And this is where RACI's weakness shows: When "Responsible" encompasses
+several technically different contributions at once, the matrix becomes
+unreadable.
+
+The architect is "R" for the arc42 documentation. But what does that mean?
+Does he write it himself? Does he only review? Does he give technical
+approval? Does he train the team? A single letter doesn't answer these
+questions.
+
+== What's Often Missing in R&D
+
+At its core, RACI asks: Who works? Who is responsible? Who gets consulted?
+Who gets informed?
+
+In R&D, you often need more:
+
+* Who *advises on technical direction*?
+* Who *reviews* the result?
+* Who *signs off technically*?
+
+"Consulted" is too broad for this. Consultation is not the same as
+technical pre-review. And "Accountable" often conflates two different
+things: organizational responsibility (budget, time) and technical
+approval.
+
+Especially in architecture and development contexts, this separation is
+important. Not every person who is responsible for budget or time can also
+make a technical judgment about whether a solution is viable.
+
+== PARIS: Finer Semantic Resolution
+
+PARIS comes from the PMBOK footnote:[A Guide to the Project Management Body
+of Knowledge. Project Management Institute. 2000. p. 111. ISBN 1-880410-22-2.].
+It's not a replacement for sound governance, but a finer role description
+where RACI bundles too much in a single column:
+
+[cols="1,3"]
+|===
+| P — Participant | Actively works on it
+| A — Accountable | Bears organizational responsibility (budget, time)
+| R — Review required | Reviews technically
+| I — Input required | Provides technical input, advises on direction
+| S — Sign-off required | Signs off technically
+|===
+
+The difference from RACI isn't that PARIS is "better." The difference is
+resolution. PARIS separates responsibility dimensions that often diverge
+in R&D.
+
+== Why Separate A and S?
+
+In many organizations, budget responsibility and technical approval
+deliberately coincide. That works as long as the same person can do both.
+
+A concrete scenario where it doesn't work:
+
+The Product Owner (A) bears budget responsibility for a new feature. If
+it takes longer, he has to explain that. But can he also technically
+assess whether the architecture decision is viable? Whether the quality
+scenarios are met? Whether the security requirements are correct?
+
+In this case, you need someone who signs off technically (S) — an
+architect, a QA lead, a security expert. The organizational responsibility
+stays with the PO. The technical approval lies elsewhere.
+
+PARIS makes this separation explicit. RACI conflates it in "Accountable."
+
+== Why Separate R and I?
+
+RACI knows "Consulted" — gets asked, provides input. But in R&D there's
+a difference between:
+
+* **Input** (I): The business department describes requirements. The
+  customer explains their use case. A stakeholder provides constraints.
+  This is advising on technical direction.
+
+* **Review** (R): The QA lead checks whether quality requirements are met.
+  The security expert reviews the threat model. This is technical
+  pre-review with a result.
+
+"Consulted" is too broad and too non-binding for this. PARIS distinguishes.
+
+== Addition: Consent as a Governance Pattern
+
+PARIS itself doesn't say what happens with the result of a review. Here,
+Sociocracy 3.0 (S3) can supplement:
+
+* Reviewers can raise a *reasoned objection*
+* No objection = proposal stands
+* An objection is not a veto, but an improvement impulse
+
+This is an *additional* governance pattern — not part of PARIS itself.
+It answers the question: What happens when the reviewer has concerns?
+
+In practice, much depends on who defines objections, when they count as
+serious, and how conflicts are resolved. Each organization must clarify
+this for itself. S3 provides a framework for that.
+
+== PARIS in req42 and arc42
+
+req42 and arc42 have explicit stakeholder chapters. They ask for each
+role: Why this role? What is its responsibility? What competencies does
+it need?
+
+PARIS provides the terminology to answer these questions:
+
+For **req42 Chapter 2**, one can ask:
+* Who participates (P)?
+* Who bears organizational responsibility (A)?
+* Who reviews technically (R)?
+* Who provides input (I)?
+* Who signs off (S)?
+
+For **req42 Chapter 9**, it's about roles, responsibilities, and skills.
+This is exactly where an abstract matrix becomes a documentable
+responsibility structure.
+
+**arc42** also benefits, because architecture decisions, reviews, and
+approvals can be assigned more clearly. Who reviews ADRs? Who gives
+technical sign-off? Who provides the requirements? PARIS makes these
+questions more visible than RACI.
+
+== Summary
+
+RACI is not wrong. It's a solid tool for task and responsibility
+clarification. But when "Responsible" pulls together several technically
+different roles, the matrix becomes unreadable.
+
+PARIS offers finer resolution:
+
+* Separation of organizational (A) and technical (S) responsibility
+* Separation of input (I) and review (R)
+* Explicit naming of those who work (P)
+
+For R&D and architecture work — where the question is not just who works,
+but also who advises technically, who reviews, and who ultimately signs
+off — this resolution is often necessary.
+
+== Next Steps
+
+In a follow-up post, I'll show how to translate an existing RACI matrix
+to PARIS — and where the typical pitfalls lie.
+
